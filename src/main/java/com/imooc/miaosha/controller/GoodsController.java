@@ -1,15 +1,25 @@
 package com.imooc.miaosha.controller;
 
 import com.imooc.miaosha.domain.MiaoshaUser;
+import com.imooc.miaosha.redis.GoodsKey;
 import com.imooc.miaosha.redis.RedisService;
 import com.imooc.miaosha.service.GoodsService;
 import com.imooc.miaosha.service.MiaoshaUserService;
 import com.imooc.miaosha.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring4.context.SpringWebContext;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.util.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 
@@ -24,6 +34,13 @@ public class GoodsController {
 
     @Autowired
     GoodsService goodsService;
+
+    @Autowired
+    ThymeleafViewResolver thymeleafViewResolver;
+
+    @Autowired
+    ApplicationContext applicationContext;
+
 
 
     /**
@@ -52,15 +69,30 @@ public class GoodsController {
      * @param miaoshaUser
      * @return
      */
-    @RequestMapping("/to_list")
-    public String list(Model model,MiaoshaUser miaoshaUser){
+    @RequestMapping(value = "/to_list",produces = "text/html")
+    @ResponseBody
+    public String list(HttpServletRequest request, HttpServletResponse response,Model model, MiaoshaUser miaoshaUser){
         model.addAttribute("user",miaoshaUser);
         List<GoodsVo> goodsList = goodsService.getGoodsVoList();
         model.addAttribute("goodsList",goodsList);
-        return "goods_list";
+//        return "goods_list";
+        //第一步
+            //试着从缓存中获取
+        String html = redisService.get(GoodsKey.getGoodsList,"",String.class);
+        if(!StringUtils.isEmpty(html)) return html;
+            //缓存中没有，手动渲染
+                //由于手动渲染调用的process方法中包含参数context，所以需要先获得context
+        SpringWebContext ctx = new SpringWebContext(request,response,request.getServletContext(),request.getLocale(),model.asMap(), applicationContext);
+        html = thymeleafViewResolver.getTemplateEngine().process("goods_list",ctx);
+        if(html != null)
+            redisService.set(GoodsKey.getGoodsList,"",html);
+
+        return html;
+
     }
-    @RequestMapping("/to_detail/{goodsId}")
-    public String detail(Model model, MiaoshaUser miaoshaUser, @PathVariable("goodsId")long goodsId){
+    @RequestMapping(value = "/to_detail/{goodsId}",produces = "text/html")
+    @ResponseBody
+    public String detail(HttpServletRequest request, HttpServletResponse response,Model model, MiaoshaUser miaoshaUser, @PathVariable("goodsId")long goodsId){
         model.addAttribute("user",miaoshaUser);
         GoodsVo goods = goodsService.getGoodsVoById(goodsId);
         model.addAttribute("goods",goods);
@@ -88,7 +120,19 @@ public class GoodsController {
         }
         model.addAttribute("miaoshaStatus",miaoshaStatus);
         model.addAttribute("remainSeconds",remainSeconds);
-        return "goods_detail";
+//        return "goods_detail";
+        //第一步
+        //试着从缓存中获取
+        String html = redisService.get(GoodsKey.getDetail,""+goodsId,String.class);
+        if(!StringUtils.isEmpty(html)) return html;
+        //缓存中没有，手动渲染
+        //由于手动渲染调用的process方法中包含参数context，所以需要先获得context
+        SpringWebContext ctx = new SpringWebContext(request,response,request.getServletContext(),request.getLocale(),model.asMap(), applicationContext);
+        html = thymeleafViewResolver.getTemplateEngine().process("goods_detail",ctx);
+        if(html != null)
+            redisService.set(GoodsKey.getGoodsList,""+goodsId,html);
+
+        return html;
 
     }
 

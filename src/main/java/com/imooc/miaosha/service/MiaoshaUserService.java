@@ -10,6 +10,7 @@ import com.imooc.miaosha.result.CodeMsg;
 import com.imooc.miaosha.util.MD5Util;
 import com.imooc.miaosha.util.UUIDUtil;
 import com.imooc.miaosha.vo.LoginVo;
+import com.sun.org.apache.bcel.internal.classfile.Code;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
@@ -30,7 +31,28 @@ public class MiaoshaUserService {
     RedisService redisService;
 
     public MiaoshaUser getById(long id){
-        return miaoshaUserDao.getById(id);
+        //取缓存
+        MiaoshaUser miaoshaUser = redisService.get(MiaoshaUserKey.getById, "" + id, MiaoshaUser.class);
+        if(miaoshaUser != null) return miaoshaUser;
+        //取数据库
+        miaoshaUser = miaoshaUserDao.getById(id);
+        if(miaoshaUser != null) redisService.set(MiaoshaUserKey.getById, "" + id, miaoshaUser);
+        return miaoshaUser;
+    }
+
+    public boolean updatePassword(String token,long id,String passwordNew){
+        //取user
+        MiaoshaUser miaoshaUser = getById(id);
+        if(miaoshaUser == null) throw  new GlobalException(CodeMsg.MOBILE_NOT_EXISTS);
+        MiaoshaUser toBeUpdate = new MiaoshaUser();
+        toBeUpdate.setId(id);
+        toBeUpdate.setPassword(MD5Util.fromPassToDBPass(passwordNew,miaoshaUser.getSalt()));
+        miaoshaUserDao.update(toBeUpdate);
+        //更新缓存
+        redisService.delete(MiaoshaUserKey.getById,""+id);
+        miaoshaUser.setPassword(toBeUpdate.getPassword());
+        redisService.set(MiaoshaUserKey.token,token,miaoshaUser);
+        return true;
     }
 
     public boolean login(HttpServletResponse response,LoginVo loginVo) {

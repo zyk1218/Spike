@@ -15,6 +15,7 @@ import com.imooc.miaosha.result.CodeMsg;
 import com.imooc.miaosha.result.Result;
 
 import javax.jws.soap.SOAPBinding;
+import java.util.Stack;
 
 @Controller
 @RequestMapping("/demo")

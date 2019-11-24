@@ -25,6 +25,27 @@ public class RedisService{
             returnToPool(jedis);
         }
     }
+
+    /**
+     * 删除旧的缓存
+     * @param prefix
+     * @param key
+     * @param value
+     * @return
+     */
+    public  boolean delete(KeyPrefix prefix,String key){
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            String realKey = prefix.getPrefix()+key;
+            long ret = jedis.del(key);
+            return  ret>0;
+        }finally {
+            returnToPool(jedis);
+        }
+    }
+
+
     public <T> boolean set(KeyPrefix prefix,String key,T value){
         Jedis jedis = null;
         try {

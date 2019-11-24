@@ -3,8 +3,10 @@ package com.imooc.miaosha.controller;
 import com.imooc.miaosha.domain.MiaoshaUser;
 import com.imooc.miaosha.redis.GoodsKey;
 import com.imooc.miaosha.redis.RedisService;
+import com.imooc.miaosha.result.Result;
 import com.imooc.miaosha.service.GoodsService;
 import com.imooc.miaosha.service.MiaoshaUserService;
+import com.imooc.miaosha.vo.GoodsDetailVo;
 import com.imooc.miaosha.vo.GoodsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -90,9 +92,46 @@ public class GoodsController {
         return html;
 
     }
-    @RequestMapping(value = "/to_detail/{goodsId}",produces = "text/html")
+
+    /**
+     * 页面静态化
+     * 页面存的是HTML，数据通过接口从服务器获得。
+     * 所以服务器端只需要写接口就OK
+     */
+    @RequestMapping(value = "/detail/{goodsId}")
     @ResponseBody
-    public String detail(HttpServletRequest request, HttpServletResponse response,Model model, MiaoshaUser miaoshaUser, @PathVariable("goodsId")long goodsId){
+    public Result<GoodsDetailVo> detail(HttpServletRequest request, HttpServletResponse response, Model model, MiaoshaUser miaoshaUser, @PathVariable("goodsId")long goodsId){
+        GoodsVo goods = goodsService.getGoodsVoById(goodsId);
+        long startAt = goods.getStartDate().getTime();
+        long endAt = goods.getEndDate().getTime();
+        long now = System.currentTimeMillis();
+        //秒杀的状态
+        int miaoshaStatus = 0;
+        //距离开始的剩余时间
+        int remainSeconds = 0;
+        //秒杀还未开始
+        if(now<startAt) {
+            miaoshaStatus = 0;
+            remainSeconds = (int)((startAt - now)/1000);
+        }else if(now > endAt){//秒杀已经结束
+            miaoshaStatus = 2;
+            remainSeconds = -1;
+        }else{//秒杀进行中
+            miaoshaStatus = 1;
+            remainSeconds = 0;
+        }
+        GoodsDetailVo vo = new GoodsDetailVo();
+        vo.setGoods(goods);
+        vo.setMiaoshaUser(miaoshaUser);
+        vo.setRemainSeconds(remainSeconds);
+        vo.setMiaoshaStatus(miaoshaStatus);
+        return Result.success(vo);
+    }
+
+
+    @RequestMapping(value = "/to_detail2/{goodsId}",produces = "text/html")
+    @ResponseBody
+    public String detail2(HttpServletRequest request, HttpServletResponse response,Model model, MiaoshaUser miaoshaUser, @PathVariable("goodsId")long goodsId){
         model.addAttribute("user",miaoshaUser);
         GoodsVo goods = goodsService.getGoodsVoById(goodsId);
         model.addAttribute("goods",goods);

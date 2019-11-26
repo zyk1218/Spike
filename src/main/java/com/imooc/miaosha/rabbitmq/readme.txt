@@ -1,0 +1,1 @@
+在rabbitMQ里有一个amqp，它是一个信道。

@@ -30,7 +30,6 @@ public class RedisService{
      * 删除旧的缓存
      * @param prefix
      * @param key
-     * @param value
      * @return
      */
     public  boolean delete(KeyPrefix prefix,String key){

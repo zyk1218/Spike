@@ -13,6 +13,7 @@ import java.util.Map;
 public class MQConfig {
 
     public static final String QUEUE = "queue";
+    public static final String MIAOSHAQUEUE = "miaoshaqueue";
     public static final String TOPIC_QUEQUE_1 = "topic.queue.1";
     public static final String TOPIC_QUEQUE_2 = "topic.queue.2";
     public static final String TOPIC_EXCHANGE = "topicExchange";
@@ -87,6 +88,15 @@ public class MQConfig {
         map.put("header1","value1");
         map.put("header2","value2");
         return BindingBuilder.bind(headerQueue()).to(HeadersExchange()).whereAll(map).match();
+    }
+
+
+    /**
+     * 秒杀Queue
+     */
+    @Bean
+    public Queue miaoshaQueue(){
+        return new Queue(MIAOSHAQUEUE,true);
     }
 
 }

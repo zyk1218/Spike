@@ -31,7 +31,7 @@ public class DemoController {
 	@Autowired
 	MQSender mqSender;
 
-		@RequestMapping("/header")
+		/*@RequestMapping("/header")
 		@ResponseBody
 		public Result<String> header() {
 			mqSender.sendHeader("11hello,header");
@@ -59,7 +59,7 @@ public class DemoController {
 			mqSender.send("hello,isip");
 			return Result.success(null);
 		}
-	
+	*/
 	 	@RequestMapping("/")
 	    @ResponseBody
 	    String home() {

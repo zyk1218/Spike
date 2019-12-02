@@ -6,6 +6,7 @@ import com.imooc.miaosha.domain.OrderInfo;
 import com.imooc.miaosha.rabbitmq.MQSender;
 import com.imooc.miaosha.rabbitmq.MiaoshaMessage;
 import com.imooc.miaosha.redis.GoodsKey;
+import com.imooc.miaosha.redis.MiaoshaKey;
 import com.imooc.miaosha.redis.RedisService;
 import com.imooc.miaosha.result.CodeMsg;
 import com.imooc.miaosha.result.Result;
@@ -13,6 +14,8 @@ import com.imooc.miaosha.service.GoodsService;
 import com.imooc.miaosha.service.MiaoshaService;
 import com.imooc.miaosha.service.MiaoshaUserService;
 import com.imooc.miaosha.service.OrderService;
+import com.imooc.miaosha.util.MD5Util;
+import com.imooc.miaosha.util.UUIDUtil;
 import com.imooc.miaosha.vo.GoodsVo;
 import com.sun.org.apache.xpath.internal.operations.Or;
 import org.apache.ibatis.annotations.Param;
@@ -100,12 +103,14 @@ public class MiaoshaController implements InitializingBean{
      * @param goodsId
      * @return
      */
-    @RequestMapping(value = "/do_miaosha",method = RequestMethod.POST)
+    @RequestMapping(value = "/{path}/do_miaosha",method = RequestMethod.POST)
     @ResponseBody
-    public Result<Integer> miaosha(Model model, MiaoshaUser miaoshaUser, @RequestParam("goodsId")long goodsId){
+    public Result<Integer> miaosha(Model model, MiaoshaUser miaoshaUser, @RequestParam("goodsId")long goodsId,@PathVariable("path") String path){
         model.addAttribute("user",miaoshaUser);
         if(miaoshaUser == null) return Result.error(CodeMsg.USER_ERROR);
-
+        //验证path
+        boolean check = miaoshaService.checkPath(miaoshaUser,goodsId,path);
+        if(!check) return Result.error(CodeMsg.REQUEST_ILLEGAL);
         //预减库存
         boolean over = localOverMap.get(goodsId);
         if(over){
@@ -151,6 +156,17 @@ public class MiaoshaController implements InitializingBean{
 
         OrderInfo orderInfo = miaoshaService.miaosha(miaoshaUser,goods);
         return Result.success(orderInfo); */
+    }
+
+
+
+    @RequestMapping(value = "/path",method = RequestMethod.GET)
+    @ResponseBody
+    public Result<String> getMiaoshaPath(Model model, MiaoshaUser miaoshaUser, @RequestParam("goodsId") long goodsId) {
+        model.addAttribute("user", miaoshaUser);
+        if (miaoshaUser == null) return Result.error(CodeMsg.USER_ERROR);
+        String path = miaoshaService.createMiaoshaPath(miaoshaUser,goodsId);
+        return Result.success(path);
     }
 
 

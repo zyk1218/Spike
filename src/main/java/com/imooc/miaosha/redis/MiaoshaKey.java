@@ -1,8 +1,9 @@
 package com.imooc.miaosha.redis;
 
 public class MiaoshaKey extends BasePrefix {
-    public MiaoshaKey(String prefix) {
-        super(prefix);
+    public MiaoshaKey(int expireSeconds,String prefix) {
+        super(expireSeconds,prefix);
     }
-    public static MiaoshaKey isGoodsOver = new MiaoshaKey("goodsOver");
+    public static MiaoshaKey isGoodsOver = new MiaoshaKey(0,"goodsOver");
+    public static MiaoshaKey getMiaoshaPath = new MiaoshaKey(60,"miaoshaPath");
 }

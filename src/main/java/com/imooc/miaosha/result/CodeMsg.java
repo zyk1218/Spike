@@ -8,6 +8,7 @@ public class CodeMsg {
 	public static CodeMsg SUCCESS = new CodeMsg(0, "success");
 	public static CodeMsg SERVER_ERROR = new CodeMsg(500001, "服务端异常");
 	public static CodeMsg BIND_ERROR = new CodeMsg(500002,"参数校验异常：%s");
+	public static CodeMsg REQUEST_ILLEGAL = new CodeMsg(500003,"非法请求");
 	//登录模块 5002XX
 	public static CodeMsg PASSWORD_EMPTY = new CodeMsg(500200,"登录密码不可为空");
 	public static CodeMsg MOBILE_EMPTY= new CodeMsg(500201,"手机号码不可为空");

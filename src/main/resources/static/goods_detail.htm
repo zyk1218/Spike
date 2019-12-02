@@ -48,7 +48,7 @@
                     <input type="hidden" name="goodsId"  id="goodsId" />
                 </form>
                 -->
-                <button class="btn btn-primary btn-block" type="button" id="buyButton"onclick="doMiaosha()">立即秒杀</button>
+                <button class="btn btn-primary btn-block" type="button" id="buyButton"onclick="getMiaoshaPath()">立即秒杀</button>
                 <input type="hidden" name="goodsId"  id="goodsId" />
             </td>
         </tr>
@@ -68,7 +68,34 @@
 </div>
 </body>
 <script>
+    function getMiaoshaPath(){
+        var goodsId = $("#goodsId").val();
+        console.log("goodsId是"+goodsId);
+        g_showLoading();
+        $.ajax({
+            url:"/miaosha/path",
+            type:"GET",
+            data:{
+                goodsId:goodsId,
+            },
+            success:function(data){
+                console.log("success" + data);
+                if(data.code == 0){
+                    var path = data.data;
+                    doMiaosha(path);
+                }else{
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.msg("客户端请求有误");
+            }
+        })
+
+    }
+
     function getMiaoshaResult(goodsId) {
+        console.log("getMiaoshaResult"+goodsId)
         g_showLoading();
         $.ajax({
             url:"/miaosha/result",
@@ -85,7 +112,7 @@
                     }else if(result == 0){
                         setTimeout(function () {
                             getMiaoshaResult(goodsId);
-                        },50);
+                        },500);
                     }else{
                         layer.confirm("恭喜你，秒杀成功！点击确定查看订单进行支付",{btn:["确定","取消"]},
                             function () {
@@ -107,14 +134,15 @@
         })
     }
     
-    function doMiaosha() {
+    function doMiaosha(path) {
         $.ajax({
-            url:"/miaosha/do_miaosha",
+            url:"/miaosha/"+path+"/do_miaosha",
             type:"POST",
             data:{
                 goodsId:$("#goodsId").val(),
             },
             success:function(data){
+                console.log("domiaosha success" + data);
                 if(data.code == 0){
                     //window.location.href = "/order_detail.htm?orderId="+data.data.id;
                     getMiaoshaResult($("#goodsId").val());
@@ -123,6 +151,7 @@
                 }
             },
             error:function(){
+                console.log("domiaosha error");
                 layer.msg("客户端请求有误");
             }
         })

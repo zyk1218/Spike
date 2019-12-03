@@ -9,6 +9,7 @@ public class CodeMsg {
 	public static CodeMsg SERVER_ERROR = new CodeMsg(500001, "服务端异常");
 	public static CodeMsg BIND_ERROR = new CodeMsg(500002,"参数校验异常：%s");
 	public static CodeMsg REQUEST_ILLEGAL = new CodeMsg(500003,"非法请求");
+	public static CodeMsg ACCESS_LIMIT = new CodeMsg(500004,"访问过于频繁");
 	//登录模块 5002XX
 	public static CodeMsg PASSWORD_EMPTY = new CodeMsg(500200,"登录密码不可为空");
 	public static CodeMsg MOBILE_EMPTY= new CodeMsg(500201,"手机号码不可为空");
@@ -25,6 +26,7 @@ public class CodeMsg {
 	//秒杀模块 5005XX
 	public static CodeMsg MIAOSHA_OVER = new CodeMsg(500500,"商品秒杀结束");
 	public static CodeMsg REPEAT_MIAOSHA = new CodeMsg(500501,"不可重复秒杀");
+	public static CodeMsg MIAOSHA_FAIL = new CodeMsg(500502,"秒杀失败");
 
 
 
